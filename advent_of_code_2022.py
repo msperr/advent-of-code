@@ -1,4 +1,4 @@
-DAY = 4
+DAY = 5
 PART = 2
 
 
@@ -30,3 +30,17 @@ if __name__ == '__main__':
         lines = [[[int(u) for u in t.split('-')] for t in s.strip().split(',')] for s in lines]
         print(sum(1 for s in lines if any(
             t1[0] <= t2[0 if PART == 1 else 1] and t2[1 if PART == 1 else 0] <= t1[1] for t1, t2 in zip(s, s[::-1]))))
+    if DAY == 5:
+        stacks = {i: [] for i in range(1, max(int((len(s) + 1) / 4) for s in lines if not s.startswith('move')) + 1)}
+        actions = list()
+        for s in lines:
+            if '[' in s:
+                for i, j in enumerate(range(1, len(s), 4), start=1):
+                    if s[j] != ' ':
+                        stacks[i] += s[j]
+            elif s.startswith('move'):
+                actions += [[int(t) for t in s.split(' ')[1:][::2]]]
+        for a, b, c in actions:
+            stacks[c] = stacks[b][:a][::(-1 if PART == 1 else 1)] + stacks[c]
+            stacks[b] = stacks[b][a:]
+        print(''.join(v[0] for v in stacks.values()))
