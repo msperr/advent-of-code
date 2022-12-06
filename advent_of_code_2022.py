@@ -1,4 +1,4 @@
-DAY = 5
+DAY = 6
 PART = 2
 
 
@@ -44,3 +44,6 @@ if __name__ == '__main__':
             stacks[c] = stacks[b][:a][::(-1 if PART == 1 else 1)] + stacks[c]
             stacks[b] = stacks[b][a:]
         print(''.join(v[0] for v in stacks.values()))
+    if DAY == 6:
+        size = 4 if PART == 1 else 14
+        print([i for i in range(size, len(lines[0]) + 1) if len(set(lines[0][i - size:i])) == size][0])
