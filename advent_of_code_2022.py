@@ -1,9 +1,17 @@
-DAY = 6
+DAY = 7
 PART = 2
 
 
 def letter_index(s):
     return ord(s) - ord('A') + 27 if ord(s) < ord('a') else ord(s) - ord('a') + 1
+
+
+class Node:
+    def __init__(self, predecessor):
+        self.predecessor, self.subdirectories, self.size = predecessor, dict(), 0
+
+    def recursive_size(self):
+        return self.size + sum(n.recursive_size() for n in self.subdirectories.values())
 
 
 if __name__ == '__main__':
@@ -47,3 +55,24 @@ if __name__ == '__main__':
     if DAY == 6:
         size = 4 if PART == 1 else 14
         print([i for i in range(size, len(lines[0]) + 1) if len(set(lines[0][i - size:i])) == size][0])
+    if DAY == 7:
+        node = Node(None)
+        directories = [node]
+        for line in lines[1:]:
+            s = line.strip().split(' ')
+            if s[0] == '$':
+                if s[1] == 'cd':
+                    if s[2] == '..':
+                        node = node.predecessor
+                    else:
+                        node = node.subdirectories[s[2]]
+                        directories += [node]
+            elif s[0] == 'dir':
+                node.subdirectories[s[1]] = Node(node)
+            else:
+                node.size += int(s[0])
+        sizes = [n.recursive_size() for n in directories]
+        if PART == 1:
+            print(sum(s for s in sizes if s <= 100000))
+        else:
+            print(sorted(s for s in sizes if s >= 30000000 - 70000000 + sizes[0])[0])
