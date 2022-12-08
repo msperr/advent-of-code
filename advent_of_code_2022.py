@@ -1,4 +1,4 @@
-DAY = 7
+DAY = 8
 PART = 2
 
 
@@ -12,6 +12,11 @@ class Node:
 
     def recursive_size(self):
         return self.size + sum(n.recursive_size() for n in self.subdirectories.values())
+
+
+def dist(trees):
+    blockers = [i for i, t in enumerate(trees[1:], start=1) if t >= trees[0]]
+    return len(trees) - 1 if len(blockers) == 0 else blockers[0]
 
 
 if __name__ == '__main__':
@@ -76,3 +81,13 @@ if __name__ == '__main__':
             print(sum(s for s in sizes if s <= 100000))
         else:
             print(sorted(s for s in sizes if s >= 30000000 - 70000000 + sizes[0])[0])
+    if DAY == 8:
+        lines = [[int(t) for t in s.strip()] for s in lines]
+        if PART == 1:
+            print(4 * (len(lines) - 1) + sum(
+                1 for i, s in enumerate(lines[1:-1], start=1) for j, t in enumerate(s[1:-1], start=1) if
+                t > max(lines[i][:j]) or t > max(lines[i][j + 1:]) or t > max(s2[j] for s2 in lines[:i]) or t > max(
+                    s2[j] for s2 in lines[i + 1:])))
+        else:
+            print(max(dist(s[:j + 1][::-1]) * dist(s[j:]) * dist([s2[j] for s2 in lines[:i + 1][::-1]]) * dist(
+                [s2[j] for s2 in lines[i:]]) for i, s in enumerate(lines) for j, t in enumerate(s)))
