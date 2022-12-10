@@ -1,4 +1,4 @@
-DAY = 8
+DAY = 10
 PART = 2
 
 
@@ -91,3 +91,31 @@ if __name__ == '__main__':
         else:
             print(max(dist(s[:j + 1][::-1]) * dist(s[j:]) * dist([s2[j] for s2 in lines[:i + 1][::-1]]) * dist(
                 [s2[j] for s2 in lines[i:]]) for i, s in enumerate(lines) for j, t in enumerate(s)))
+    if DAY == 9:
+        knots = [(0, 0) for i in range(2 if PART == 1 else 10)]
+        positions = {tuple(knots[-1])}
+        for s in lines:
+            d, w = s.strip().split(' ')
+            d = (1, 0) if d == 'R' else (0, 1) if d == 'U' else (-1, 0) if d == 'L' else (0, -1)
+            for a in range(int(w)):
+                knots[0] = tuple(knots[0][i] + d[i] for i in range(len(knots[0])))
+                for j in range(1, len(knots)):
+                    if any(abs(knots[j - 1][i] - knots[j][i]) > 1 for i in range(len(knots[0]))):
+                        knots[j] = tuple(knots[j][i] + (
+                            0 if knots[j - 1][i] == knots[j][i] else (knots[j - 1][i] - knots[j][i]) / abs(
+                                knots[j - 1][i] - knots[j][i])) for i in range(len(knots[0])))
+                positions.add(tuple(knots[-1]))
+        print(len(positions))
+    if DAY == 10:
+        lines = [t for s in [[0] if s.strip() == 'noop' else [0, int(s.strip().split(' ')[1])] for s in lines] for t in
+                 s]
+        if PART == 1:
+            print(sum(i * (1 + sum(lines[:i - 1])) for i in range(20, 221, 40)))
+        else:
+            register = 1
+            screen = ''
+            for i, s in enumerate(lines[:240]):
+                screen += '#' if register - 1 <= i % 40 <= register + 1 else '.'
+                register += s
+            for i, j in zip(range(0, 201, 40), range(40, 241, 40)):
+                print(screen[i:j])
