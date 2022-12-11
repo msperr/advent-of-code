@@ -1,4 +1,6 @@
-DAY = 10
+import math
+
+DAY = 11
 PART = 2
 
 
@@ -12,6 +14,18 @@ class Node:
 
     def recursive_size(self):
         return self.size + sum(n.recursive_size() for n in self.subdirectories.values())
+
+
+class Monkey:
+    def __init__(self):
+        self.items, self.operation, self.test, self.true_monkey, self.false_monkey = [], None, None, None, None
+
+    def operate(self, item):
+        a, b = (item if self.operation[i] == 'old' else int(self.operation[i]) for i in [2, 4])
+        return a * b if self.operation[3] == '*' else a + b
+
+    def next_monkey(self, item):
+        return self.true_monkey if item % self.test == 0 else self.false_monkey
 
 
 def dist(trees):
@@ -119,3 +133,33 @@ if __name__ == '__main__':
                 register += s
             for i, j in zip(range(0, 201, 40), range(40, 241, 40)):
                 print(screen[i:j])
+    if DAY == 11:
+        monkeys = []
+        monkey = None
+        for s in lines:
+            t = s.strip().split(' ')
+            if t[0] == 'Monkey':
+                monkey = Monkey()
+                monkeys += [monkey]
+            elif t[0] == 'Starting':
+                monkey.items = [int(x) for x in s.strip()[16:].split(', ')]
+            elif t[0] == 'Operation:':
+                monkey.operation = t[1:]
+            elif t[0] == 'Test:':
+                monkey.test = int(t[3])
+            elif t[0] == 'If':
+                if t[1] == 'true:':
+                    monkey.true_monkey = int(t[5])
+                else:
+                    monkey.false_monkey = int(t[5])
+        inspections = [0] * len(monkeys)
+        for _ in range(20 if PART == 1 else 10000):
+            for i, monkey in enumerate(monkeys):
+                for item in monkey.items:
+                    new_item = monkey.operate(item)
+                    new_item = new_item // 3 if PART == 1 else new_item % (math.prod(m.test for m in monkeys))
+                    monkeys[monkey.next_monkey(new_item)].items += [new_item]
+                    inspections[i] += 1
+                monkey.items = []
+        inspections = sorted(inspections, reverse=True)
+        print(inspections[0] * inspections[1])
