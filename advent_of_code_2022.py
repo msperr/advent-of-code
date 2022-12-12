@@ -1,6 +1,6 @@
 import math
 
-DAY = 11
+DAY = 12
 PART = 2
 
 
@@ -163,3 +163,21 @@ if __name__ == '__main__':
                 monkey.items = []
         inspections = sorted(inspections, reverse=True)
         print(inspections[0] * inspections[1])
+    if DAY == 12:
+        lines = [[t for t in s.strip()] for s in lines]
+        height = [['a' if t == 'S' else 'z' if t == 'E' else t for t in s] for s in lines]
+        distances = [[0 if t == ('S' if PART == 1 else 'E') else len(lines) * len(lines[0]) for t in s] for s in lines]
+        visited = set()
+        while True:
+            i, j = sorted([(i, j, distances[i][j]) for i, s in enumerate(lines) for j, t in enumerate(s) if
+                           (i, j) not in visited], key=lambda x: x[2])[0][:2]
+            if lines[i][j] == 'E' if PART == 1 else height[i][j] == 'a':
+                print(distances[i][j])
+                break
+            x = lines[i][j]
+            visited.add((i, j))
+            for i2, j2 in [(i2, j2) for i2, j2 in [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)] if
+                           0 <= i2 < len(lines) and 0 <= j2 < len(lines[0]) and (i2, j2) not in visited and (
+                           ord(height[i2][j2]) <= ord(height[i][j]) + 1 if PART == 1 else ord(height[i][j]) <= ord(
+                                   height[i2][j2]) + 1)]:
+                distances[i2][j2] = min(distances[i2][j2], distances[i][j] + 1)
