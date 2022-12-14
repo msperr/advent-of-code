@@ -1,6 +1,7 @@
+import functools
 import math
 
-DAY = 12
+DAY = 13
 PART = 2
 
 
@@ -31,6 +32,20 @@ class Monkey:
 def dist(trees):
     blockers = [i for i, t in enumerate(trees[1:], start=1) if t >= trees[0]]
     return len(trees) - 1 if len(blockers) == 0 else blockers[0]
+
+
+def compare(a, b):
+    if isinstance(a, int) and isinstance(b, int):
+        return None if a == b else a < b
+    elif isinstance(a, list) and isinstance(b, list):
+        for x, y in zip(a, b):
+            c = compare(x, y)
+            if c is not None:
+                return c
+        if len(a) != len(b):
+            return len(a) < len(b)
+    else:
+        return compare([a] if isinstance(a, int) else a, [b] if isinstance(b, int) else b)
 
 
 if __name__ == '__main__':
@@ -181,3 +196,12 @@ if __name__ == '__main__':
                            ord(height[i2][j2]) <= ord(height[i][j]) + 1 if PART == 1 else ord(height[i][j]) <= ord(
                                    height[i2][j2]) + 1)]:
                 distances[i2][j2] = min(distances[i2][j2], distances[i][j] + 1)
+    if DAY == 13:
+        pairs = [(eval(lines[i].strip()), eval(lines[i + 1].strip())) for i in range(0, len(lines), 3)]
+        if PART == 1:
+            print(sum(i for i, p in enumerate(pairs, start=1) if compare(*p)))
+        else:
+            dividers = [[[2]], [[6]]]
+            pairs = sorted([x for p in pairs for x in p] + dividers,
+                           key=functools.cmp_to_key(lambda x, y: -1 if compare(x, y) else 1))
+            print(math.prod(i for i, s in enumerate(pairs, start=1) if s in dividers))
