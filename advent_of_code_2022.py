@@ -1,7 +1,7 @@
 import functools
 import math
 
-DAY = 13
+DAY = 14
 PART = 2
 
 
@@ -205,3 +205,31 @@ if __name__ == '__main__':
             pairs = sorted([x for p in pairs for x in p] + dividers,
                            key=functools.cmp_to_key(lambda x, y: -1 if compare(x, y) else 1))
             print(math.prod(i for i, s in enumerate(pairs, start=1) if s in dividers))
+    if DAY == 14:
+        lines = [[[int(a) for a in t.split(',')] for t in s.strip().split(' -> ')] for s in lines]
+        rock, sand = set(), set()
+        for s in lines:
+            for t1, t2 in zip(s[:-1], s[1:]):
+                rock.update([(i, t1[1]) for i in range(min(t1[0], t2[0]), max(t1[0], t2[0]) + 1)])
+                rock.update([(t1[0], i) for i in range(min(t1[1], t2[1]), max(t1[1], t2[1]) + 1)])
+        finished = False
+        while True:
+            s = (500, 0)
+            while True:
+                if PART == 1 and s[1] >= max(t[1] for t in rock):
+                    finished = True
+                    break
+                new_position = False
+                for p in [(s[0], s[1] + 1), (s[0] - 1, s[1] + 1), (s[0] + 1, s[1] + 1)]:
+                    if p not in rock.union(sand) and p[1] <= max(t[1] for t in rock) + 1:
+                        s = p
+                        new_position = True
+                        break
+                if not new_position:
+                    sand.add(s)
+                    if PART == 2 and s == (500, 0):
+                        finished = True
+                    break
+            if finished:
+                break
+        print(len(sand))
