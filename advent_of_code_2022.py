@@ -1,7 +1,8 @@
 import functools
 import math
+import sys
 
-DAY = 14
+DAY = 18
 PART = 2
 
 
@@ -233,3 +234,66 @@ if __name__ == '__main__':
             if finished:
                 break
         print(len(sand))
+    if DAY == 17:
+        types = [[(i, 0) for i in range(4)], [(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)],
+                 [(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)], [(0, i) for i in range(4)], [(0, 0), (1, 0), (0, 1), (1, 1)]]
+        rock = dict()
+        i, p = 0, 0
+        item = [(x + 2, y + (-1 if len(rock) == 0 else max(k for k, v in rock.items() if len(v) > 0)) + 4) for x, y
+                in types[i % len(types)]]
+        rock.update({k: set() for k in range(len(rock), max(j[1] for j in item) + 1)})
+        while True:
+            push = 1 if lines[0].strip()[p] == '>' else -1
+            if p == len(lines[0].strip()) - 1:
+                print(i, max(k for k, v in rock.items() if len(v) > 0),
+                      rock[max(k for k, v in rock.items() if len(v) > 0)])
+            p = (p + 1) % len(lines[0].strip())
+            if not any(x + push < 0 or 6 < x + push or x + push in rock[y] for x, y in item):
+                item = [(x + push, y) for x, y in item]
+            if any(y == 0 or x in rock[y - 1] for x, y in item):
+                for x, y in item:
+                    rock[y].add(x)
+                i += 1
+                if i == 100:
+                    break
+                item = [(x + 2, y + (-1 if len(rock) == 0 else max(k for k, v in rock.items() if len(v) > 0)) + 4) for
+                        x, y in types[i % 5]]
+                rock.update({k: set() for k in range(len(rock), max(j[1] for j in item) + 1)})
+            else:
+                item = [(x, y - 1) for x, y in item]
+        print(rock)
+        print(max(k for k, v in rock.items() if len(v) > 0) + 1)
+    if DAY == 18:
+        lines = [[int(t) for t in s.strip().split(',')] for s in lines]
+        size = [max(s[i] for s in lines) + 3 for i in range(3)]
+        grid = [[[False for _ in range(size[2])] for _ in range(size[1])] for _ in range(size[0])]
+        for s in lines:
+            grid[s[0]+1][s[1]+1][s[2]+1] = True
+        if PART == 1:
+            print(sum(
+                1 for x in range(size[0]) for y in range(size[1]) for a, b in zip(range(size[2] - 1), range(1, size[2]))
+                if grid[x][y][a] != grid[x][y][b]) + sum(
+                1 for x in range(size[0]) for z in range(size[2]) for a, b in zip(range(size[1] - 1), range(1, size[1]))
+                if grid[x][a][z] != grid[x][b][z]) + sum(
+                1 for y in range(size[1]) for z in range(size[2]) for a, b in zip(range(size[0] - 1), range(1, size[0]))
+                if grid[a][y][z] != grid[b][y][z]))
+        else:
+            visited = [[[not any(grid[x2][y2][z2] for x2, y2, z2 in
+                                 [(x2, y2, z2) for x2 in range(x - 1, x + 2) for y2 in range(y - 1, y + 2) for z2 in
+                                  range(z - 1, z + 2)] if 0 <= x2 < size[0] and 0 <= y2 < size[1] and 0 <= z2 < size[2])
+                         for z in range(size[2])] for y in range(size[1])] for x in range(size[0])]
+            start = [(x, y, z) for x in range(size[0]) for y in range(size[1]) for z in range(size[2]) if
+                     not grid[x][y][z] and not visited[x][y][z]][0]
+
+            def f(x, y, z):
+                visited[x][y][z] = True
+                result = sum(1 if grid[x2][y2][z2] else f(x2, y2, z2) for x2, y2, z2 in
+                                                   [(x - 1, y, z), (x + 1, y, z), (x, y - 1, z), (x, y + 1, z),
+                                                    (x, y, z - 1), (x, y, z + 1)] if
+                                                   0 <= x2 < size[0] and 0 <= y2 < size[1] and 0 <= z2 < size[2] and
+                                                   not visited[x2][y2][z2])
+                return result
+
+            sys.setrecursionlimit(sum(1 for x in range(size[0]) for y in range(size[1]) for z in range(size[2]) if
+                                      not grid[x][y][z] and not visited[x][y][z]))
+            print(f(*start))
