@@ -326,6 +326,33 @@ if __name__ == '__main__':
             sys.setrecursionlimit(sum(1 for x in range(size[0]) for y in range(size[1]) for z in range(size[2]) if
                                       not grid[x][y][z] and not visited[x][y][z]))
             print(f(*start))
+    if DAY == 19:
+        lines = [s.strip().split(' ') for s in (lines if PART == 1 else lines[:3])]
+        lines = {int(s[1][:-1]): [int(s[i]) for i in [6, 12, 18, 21, 27, 30]] for s in lines}
+        goods = ['ore', 'clay', 'obsidian', 'geode']
+        steps = 24 if PART == 1 else 32
+        result = dict()
+        for i, s in lines.items():
+            model = mip.Model()
+            x = {j: {r: model.add_var(f'x({j},{r})', var_type=mip.BINARY) for r in goods} for j in range(steps)}
+            for j in range(steps):
+                model += j + mip.xsum((j - k - 1) * x[k]['ore'] for k in range(j)) >= mip.xsum(
+                    s[0] * x[k][goods[0]] + s[1] * x[k][goods[1]] + s[2] * x[k][goods[2]] + s[4] * x[k][goods[3]] for k
+                    in range(j + 1)), f'ore({j})'
+                model += mip.xsum((j - k - 1) * x[k]['clay'] for k in range(j)) >= mip.xsum(
+                    s[3] * x[k][goods[2]] for k in range(1 + j)), f'clay({j})'
+                model += mip.xsum((j - k - 1) * x[k]['obsidian'] for k in range(j)) >= mip.xsum(
+                    s[5] * x[k][goods[3]] for k in range(1 + j)), f'obsidian({j})'
+                model += mip.xsum(x[j][g] for g in goods) <= 1
+            model.objective = mip.xsum((steps - j - 1) * x[j][goods[3]] for j in range(steps))
+            model.sense = mip.MAXIMIZE
+            model.verbose = 0
+            model.optimize()
+            result[i] = int(model.objective_value)
+        if PART == 1:
+            print(sum(i * r for i, r in result.items()))
+        else:
+            print(math.prod(result.values()))
     if DAY == 23:
         grid = [[t == '#' for t in s.strip()] for s in lines]
         directions = [[(-1, a) for a in range(-1, 2)], [(1, a) for a in range(-1, 2)], [(a, -1) for a in range(-1, 2)],
