@@ -4,7 +4,7 @@ import sys
 
 import mip
 
-DAY = 18
+DAY = 23
 PART = 2
 
 
@@ -49,6 +49,15 @@ def compare(a, b):
             return len(a) < len(b)
     else:
         return compare([a] if isinstance(a, int) else a, [b] if isinstance(b, int) else b)
+
+
+def move(i, j, grid, directions):
+    if not any(grid[i - 1][j - 1:j + 2] + [grid[i][j - 1], grid[i][j + 1]] + grid[i + 1][j - 1:j + 2]):
+        return i, j
+    for d in directions:
+        if not any(grid[i + x][j + y] for x, y in d):
+            return i + d[1][0], j + d[1][1]
+    return i, j
 
 
 if __name__ == '__main__':
@@ -317,3 +326,41 @@ if __name__ == '__main__':
             sys.setrecursionlimit(sum(1 for x in range(size[0]) for y in range(size[1]) for z in range(size[2]) if
                                       not grid[x][y][z] and not visited[x][y][z]))
             print(f(*start))
+    if DAY == 23:
+        grid = [[t == '#' for t in s.strip()] for s in lines]
+        directions = [[(-1, a) for a in range(-1, 2)], [(1, a) for a in range(-1, 2)], [(a, -1) for a in range(-1, 2)],
+                      [(a, 1) for a in range(-1, 2)]]
+        index = 1
+        while index <= 10 or PART == 2:
+            if any(grid[0]):
+                grid = [[False for _ in grid[0]]] + grid
+            if any(grid[-1]):
+                grid = grid + [[False for _ in grid[0]]]
+            if any(s[0] for s in grid):
+                grid = [[False] + s for s in grid]
+            if any(s[-1] for s in grid):
+                grid = [s + [False] for s in grid]
+            moves = dict()
+            suppose = [[0 for _ in s] for s in grid]
+            for i, j in [(i, j) for i, s in enumerate(grid) for j, t in enumerate(s) if t]:
+                x, y = move(i, j, grid, directions)
+                moves[(i, j)] = (x, y)
+                suppose[x][y] += 1
+            grid = [[False for _ in s] for s in grid]
+            for (i, j), (x, y) in moves.items():
+                if suppose[x][y] <= 1:
+                    grid[x][y] = True
+                else:
+                    grid[i][j] = True
+            if PART == 2 and all((i, j) == (x, y) or suppose[x][y] >= 2 for (i, j), (x, y) in moves.items()):
+                break
+            directions = directions[1:] + [directions[0]]
+            index += 1
+        if PART == 1:
+            north = min(i for i, s in enumerate(grid) if any(s))
+            south = max(i for i, s in enumerate(grid) if any(s))
+            west = min(j for j in range(len(grid[0])) if any(s[j] for s in grid))
+            east = max(j for j in range(len(grid[0])) if any(s[j] for s in grid))
+            print(sum(1 for s in grid[north:south + 1] for t in s[west:east + 1] if not t))
+        else:
+            print(index)
