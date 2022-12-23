@@ -2,6 +2,8 @@ import functools
 import math
 import sys
 
+import mip
+
 DAY = 18
 PART = 2
 
@@ -234,6 +236,24 @@ if __name__ == '__main__':
             if finished:
                 break
         print(len(sand))
+    if DAY == 16:
+        lines = {s.split(' ')[1]: (int(s.split(' ')[4][5:-1]), [t[:-1] for t in s.split(' ')[9:]]) for s in lines}
+        steps = 30 if PART == 1 else 26
+        model = mip.Model()
+        x = {(n, t, d): model.add_var(f'x({n},{t},{d})', var_type=mip.BINARY) for n, v in lines.items() for t in
+             [n] + v[1] for d in range(steps)}
+        for node in lines.keys():
+            for time in range(steps - 1):
+                model += mip.xsum(v for (_, t, d), v in x.items() if t == node and d == time) == mip.xsum(
+                    v for (s, _, d), v in x.items() if s == node and d == time + 1)
+            model += mip.xsum(v for (s, _, d), v in x.items() if s == node and d == 0) == (
+                0 if node != 'AA' else 1 if PART == 1 else 2)
+            model += mip.xsum(v for (s, t, _), v in x.items() if s == node and t == node) <= 1
+        model.objective = mip.xsum(v * (steps - 1 - d) * lines[s][0] for (s, t, d), v in x.items() if s == t)
+        model.sense = mip.MAXIMIZE
+        model.verbose = 0
+        model.optimize()
+        print(int(model.objective_value))
     if DAY == 17:
         types = [[(i, 0) for i in range(4)], [(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)],
                  [(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)], [(0, i) for i in range(4)], [(0, 0), (1, 0), (0, 1), (1, 1)]]
