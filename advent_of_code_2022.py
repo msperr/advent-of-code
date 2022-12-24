@@ -4,7 +4,7 @@ import sys
 
 import mip
 
-DAY = 23
+DAY = 24
 PART = 2
 
 
@@ -391,3 +391,20 @@ if __name__ == '__main__':
             print(sum(1 for s in grid[north:south + 1] for t in s[west:east + 1] if not t))
         else:
             print(index)
+    if DAY == 24:
+        grid = [[([] if t == '.' else [t]) for t in s.strip()[1:-1]] for s in lines[1:-1]]
+        moves = {'^': (-1, 0), 'v': (1, 0), '<': (0, -1), '>': (0, 1)}
+        index = 0
+        for source, target in [(0, -1)] if PART == 1 else [(0, -1), (-1, 0), (0, -1)]:
+            position = [[False for _ in s] for s in grid]
+            while True:
+                index += 1
+                grid = [[[k for k, v in moves.items() if k in grid[(i - v[0]) % len(grid)][(j - v[1]) % (len(
+                    grid[0]))]] for j, t in enumerate(s)] for i, s in enumerate(grid)]
+                if position[target][target]:
+                    break
+                position = [[len(t) == 0 and ((i, j) == (source % len(grid), source % len(grid[0])) or any(
+                    position[x][y] for x, y in [(i - 1, j), (i, j), (i + 1, j), (i, j - 1), (i, j + 1)] if
+                    0 <= x < len(grid) and 0 <= y < len(grid[0]))) for j, t in enumerate(s)] for i, s in
+                            enumerate(grid)]
+        print(index)
